@@ -36,7 +36,7 @@ class FrameworkTest(unittest.TestCase):
                     "Test-MIBasicModel",
                     weightGenerator=env.createModel(
                         "MIBasicModel",
-                        opts={"modelSvr": self.modelsvr, "trainingRunId": "testModel-4b8fcc0053f13d518c4056ba9e1e3cdc", "barOnly": True},
+                        opts={"modelSvr": self.modelsvr, "trainingRunId": "testModel-4b8fcc0053f13d518c4056ba9e1e3cdc", "secret": "marketinsights-k8s-cred", "barOnly": True},
                         modelModule="tradeframework.models.remote"))
                 .addAsset(asset)
             )
@@ -65,7 +65,7 @@ class FrameworkTest(unittest.TestCase):
                     "Test-MIBasicModel",
                     weightGenerator=env.createModel(
                         "MIBasicModel",
-                        opts={"window": 2, "modelSvr": self.modelsvr, "trainingRunId": "testModel-4b8fcc0053f13d518c4056ba9e1e3cdc", "barOnly": True, "debug": True},
+                        opts={"window": 2, "modelSvr": self.modelsvr, "trainingRunId": "testModel-4b8fcc0053f13d518c4056ba9e1e3cdc", "secret": "marketinsights-k8s-cred", "barOnly": True},
                         modelModule="tradeframework.models.remote"))
                 .addAsset(asset)
             )

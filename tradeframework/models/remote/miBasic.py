@@ -8,10 +8,10 @@ from marketinsights.remote.ml import MIAssembly
 
 class MIBasicModel(Model):
 
-    def __init__(self, env, modelSvr, trainingRunId, threshold=0, barOnly=False, credstore=None, window=0, debug=False):
+    def __init__(self, env, modelSvr, trainingRunId, threshold=0, barOnly=False, credstore=None, secret=None, window=0, debug=False):
         Model.__init__(self, env, window)
 
-        self.assembly = MIAssembly(modelSvr=modelSvr, credentials_store=credstore)
+        self.assembly = MIAssembly(modelSvr=modelSvr, credentials_store=credstore, secret=secret)
         self.trainingRunId = trainingRunId
         self.threshold = threshold
         self.debug = debug
