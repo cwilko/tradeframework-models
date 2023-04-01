@@ -12,11 +12,12 @@ dir = os.path.dirname(os.path.abspath(__file__))
 
 
 class FrameworkTest(unittest.TestCase):
-
     def setUp(self):
-        ts = pd.read_csv(dir + '/data/testDOW.csv', parse_dates=True, index_col=0, dayfirst=True)
-        #ts = ts.tz_localize("UTC")
-        #ts.index = ts.index.tz_convert("US/Eastern")
+        ts = pd.read_csv(
+            dir + "/data/testDOW.csv", parse_dates=True, index_col=0, dayfirst=True
+        )
+        # ts = ts.tz_localize("UTC")
+        # ts.index = ts.index.tz_convert("US/Eastern")
         self.asset1 = Asset("DOW", ts)
         self.modelsvr = MIModelServer(secret="marketinsights-k8s-cred")
 
@@ -30,15 +31,23 @@ class FrameworkTest(unittest.TestCase):
         asset = env.append(Asset("DOW"))
 
         p = env.setPortfolio(
-            env.createDerivative("MyPortfolio", weightGenerator=env.createOptimizer("EqualWeightsOptimizer"))
-            .addAsset(
+            env.createDerivative(
+                "MyPortfolio",
+                weightGenerator=env.createOptimizer("EqualWeightsOptimizer"),
+            ).addAsset(
                 env.createDerivative(
                     "Test-MIBasicModel",
                     weightGenerator=env.createModel(
                         "MIBasicModel",
-                        opts={"modelSvr": self.modelsvr, "trainingRunId": "testModel-4b8fcc0053f13d518c4056ba9e1e3cdc", "secret": "marketinsights-k8s-cred", "barOnly": True},
-                        modelModule="tradeframework.models.remote"))
-                .addAsset(asset)
+                        opts={
+                            "modelSvr": self.modelsvr,
+                            "trainingRunId": "testModel-4b8fcc0053f13d518c4056ba9e1e3cdc",
+                            "secret": "marketinsights-k8s-cred",
+                            "barOnly": True,
+                        },
+                        modelModule="tradeframework.models.remote",
+                    ),
+                ).addAsset(asset)
             )
         )
 
@@ -46,8 +55,13 @@ class FrameworkTest(unittest.TestCase):
         env.refresh()
 
         # Check results
-        self.assertEqual(ppl.cropTime(p.assets[0].weights, start="15:00", end="16:00").values.sum(), 8.0)
-        self.assertTrue(np.allclose(np.prod(utils.getPeriodReturns(p.returns) + 1), 1.001976))
+        self.assertEqual(
+            ppl.cropTime(p.assets[0].weights, start="15:00", end="16:00").values.sum(),
+            8.0,
+        )
+        self.assertTrue(
+            np.allclose(np.prod(utils.getPeriodReturns(p.returns) + 1), 1.001976)
+        )
 
     def test_MIBasic_singleModel_online(self):
 
@@ -59,15 +73,24 @@ class FrameworkTest(unittest.TestCase):
         asset = env.append(Asset("DOW"))
 
         p = env.setPortfolio(
-            env.createDerivative("MyPortfolio", weightGenerator=env.createOptimizer("EqualWeightsOptimizer"))
-            .addAsset(
+            env.createDerivative(
+                "MyPortfolio",
+                weightGenerator=env.createOptimizer("EqualWeightsOptimizer"),
+            ).addAsset(
                 env.createDerivative(
                     "Test-MIBasicModel",
                     weightGenerator=env.createModel(
                         "MIBasicModel",
-                        opts={"window": 2, "modelSvr": self.modelsvr, "trainingRunId": "testModel-4b8fcc0053f13d518c4056ba9e1e3cdc", "secret": "marketinsights-k8s-cred", "barOnly": True},
-                        modelModule="tradeframework.models.remote"))
-                .addAsset(asset)
+                        opts={
+                            "window": 2,
+                            "modelSvr": self.modelsvr,
+                            "trainingRunId": "testModel-4b8fcc0053f13d518c4056ba9e1e3cdc",
+                            "secret": "marketinsights-k8s-cred",
+                            "barOnly": True,
+                        },
+                        modelModule="tradeframework.models.remote",
+                    ),
+                ).addAsset(asset)
             )
         )
 
@@ -79,10 +102,17 @@ class FrameworkTest(unittest.TestCase):
         c = 0
         for i in idx:
             env.append(Asset("DOW", self.asset1.values[c:i]), refreshPortfolio=True)
-            env.append(Asset("DOW", self.asset1.values[i:i + 1]), refreshPortfolio=True)
+            env.append(
+                Asset("DOW", self.asset1.values[i : i + 1]), refreshPortfolio=True
+            )
             c = i + 1
         env.append(Asset("DOW", self.asset1.values[c:]), refreshPortfolio=True)
 
         # Check results
-        self.assertEqual(ppl.cropTime(p.assets[0].weights, start="15:00", end="16:00").values.sum(), 8.0)
-        self.assertTrue(np.allclose(np.prod(utils.getPeriodReturns(p.returns) + 1), 1.001976))
+        self.assertEqual(
+            ppl.cropTime(p.assets[0].weights, start="15:00", end="16:00").values.sum(),
+            8.0,
+        )
+        self.assertTrue(
+            np.allclose(np.prod(utils.getPeriodReturns(p.returns) + 1), 1.001976)
+        )
