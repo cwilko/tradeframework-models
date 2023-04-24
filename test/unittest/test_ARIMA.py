@@ -40,7 +40,7 @@ class FrameworkTest(unittest.TestCase):
                             "fit": "inSample",
                             "barOnly": False,
                         },
-                        modelModule="tradeframework.models.remote",
+                        modelModule="tradeframework.models.regression",
                     ),
                 ).addAsset(asset)
             )
@@ -78,7 +78,7 @@ class FrameworkTest(unittest.TestCase):
                             "fit": "fitOnce",
                             "barOnly": False,
                         },
-                        modelModule="tradeframework.models.remote",
+                        modelModule="tradeframework.models.regression",
                     ),
                 ).addAsset(asset)
             )
@@ -116,7 +116,7 @@ class FrameworkTest(unittest.TestCase):
                             "fit": "fitWindow",
                             "barOnly": False,
                         },
-                        modelModule="tradeframework.models.remote",
+                        modelModule="tradeframework.models.regression",
                     ),
                 ).addAsset(asset)
             )
@@ -154,7 +154,7 @@ class FrameworkTest(unittest.TestCase):
                             "log": False,
                             "barOnly": False,
                         },
-                        modelModule="tradeframework.models.remote",
+                        modelModule="tradeframework.models.regression",
                     ),
                 ).addAsset(asset)
             )
@@ -194,7 +194,7 @@ class FrameworkTest(unittest.TestCase):
                             "log": False,
                             "barOnly": False,
                         },
-                        modelModule="tradeframework.models.remote",
+                        modelModule="tradeframework.models.regression",
                     ),
                 ).addAsset(asset)
             )
