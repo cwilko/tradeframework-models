@@ -1,5 +1,6 @@
-#tradeframework @ git+https://github.com/cwilko/tradeframework.git
-#marketinsights-remote @ git+https://github.com/cwilko/marketinsights-remote.git
+tradeframework @ git+https://github.com/cwilko/tradeframework.git
+marketinsights-remote @ git+https://github.com/cwilko/marketinsights-remote.git
+statsmodels<=0.13.5
 numpy>=1.19,<=1.23.5
 pandas>=1.1,<=1.5.3
 

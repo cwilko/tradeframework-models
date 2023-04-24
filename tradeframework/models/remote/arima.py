@@ -3,7 +3,8 @@ import numpy as np
 from tradeframework.api.core import Model
 import statsmodels.api as sm
 from typing import Literal
-from tqdm import tqdm
+
+# from tqdm import tqdm
 
 
 class ARIMA(Model):
@@ -19,6 +20,7 @@ class ARIMA(Model):
         fit: Literal["fitAll", "fitWindow", "fitOnce", "inSample"] = "inSample",
         params=None,
         barOnly=True,
+        log=True,
     ):
         Model.__init__(self, env, window)
         self.AR = AR
@@ -27,17 +29,24 @@ class ARIMA(Model):
         self.fit = fit
         self.params = params
         self.barOnly = barOnly
+        self.log = log
 
     def getSignals(self, window, idx=0):
-
         signals = pd.DataFrame(
             np.zeros((len(window), 2)),
             index=window.index,
             columns=["bar", "gap"],
         )
 
-        if self.fit == "inSample" or self.params is not None:
+        predictionSignals = pd.DataFrame()
 
+        # Convert window to log prices
+        if self.log:
+            window = np.log(window)
+
+        # TODO: Option to convert window to differenced prices?
+
+        if self.fit == "inSample" or self.params is not None:
             # For development and analysis purposes, get "predictions" of in-sample values
             model = sm.tsa.arima.ARIMA(
                 window["Close"].values, order=(self.AR, self.I, self.MA)
@@ -49,35 +58,32 @@ class ARIMA(Model):
             else:
                 self.result = model.fit()
 
-            predictions = self.result.predict(start=0, end=len(window) - 1)
+            predictions = self.result.predict(start=1, end=len(window))
 
-            predictionSignals = np.sign(predictions - window["Close"].shift().values)
+            predictionSignals = np.sign(predictions - window["Close"].values)
 
             predictionSignals = pd.DataFrame(
-                np.array([predictionSignals, predictionSignals]).T,
-                index=window.index,
+                np.array([predictionSignals[:-1], predictionSignals[1:]]).T,
+                index=window.index[1:],
                 columns=["bar", "gap"],
             )
 
         elif len(window) > self.window:
-
-            dataLen = len(window) - self.window
+            dataLen = len(window) - self.window + 1
             self.result = sm.tsa.arima.ARIMA(
                 window[: self.window]["Close"].values, order=(self.AR, self.I, self.MA)
             ).fit()
 
             if self.fit == "fitOnce":
-
                 # Fit to an initial window, then predict all based on fitted model.
                 self.result = self.result.append(window[self.window :]["Close"].values)
-                predictions = self.result.predict(
-                    start=self.window, end=len(window) - 1
-                )
+                predictions = self.result.predict(start=self.window, end=len(window))
 
             else:
                 predictions = np.array([self.result.forecast()[0]])
 
-                for i in tqdm(range(1, dataLen)):
+                # for i in tqdm(range(1, dataLen)):
+                for i in range(1, dataLen):
                     if self.fit == "fitAll":
                         # Fit to an ever increasing window and predict next step
 
@@ -89,7 +95,7 @@ class ARIMA(Model):
                             refit=True,
                         )
                     elif self.fit == "fitWindow":
-                        # Fit to an rolling window and predict next step
+                        # Fit to a rolling window and predict next step
                         self.result = sm.tsa.arima.ARIMA(
                             window[i : i + self.window]["Close"].values,
                             order=(self.AR, self.I, self.MA),
@@ -98,18 +104,19 @@ class ARIMA(Model):
                     predictions = np.append(predictions, self.result.forecast()[0])
 
             predictionSignals = np.sign(
-                predictions - window[self.window - 1 : -1]["Close"].values
+                predictions - window[self.window - 1 :]["Close"].values
             )
 
             predictionSignals = pd.DataFrame(
-                np.array([predictionSignals, predictionSignals]).T,
+                np.array([predictionSignals[:-1], predictionSignals[1:]]).T,
                 index=window[self.window :].index,
                 columns=["bar", "gap"],
             )
 
-        if self.barOnly:
-            predictionSignals["gap"] = 0
+        if not predictionSignals.empty:
+            if self.barOnly:
+                predictionSignals["gap"] = 0
 
-        signals.update(predictionSignals)
+            signals.update(predictionSignals)
 
         return signals[idx:]
